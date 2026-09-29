@@ -8,20 +8,21 @@
 
 #include "exercise.h"
 
+#define EXERCISE_COUNT (sizeof exercises / sizeof exercises[0])
+
 static const struct exercise exercises[] = {
-    {
-        .chapter = 6,
-        .number = 38,
-        .title = "String Reverse",
-        .path = "./build/chapter_06/06_38_string_reverse",
-    },
+    #include "exercises.inc"
 };
 
 static int read_option(const char *prompt, int *value);
 
 static int run_exercise(const struct exercise *exercise);
 
-static void chapter_06_menu(void);
+static void chapter_menu(unsigned int chapter);
+
+static void print_chapters(void);
+
+static int chapter_exists(unsigned int chapter);
 
 int main(void)
 {
@@ -31,11 +32,15 @@ int main(void)
         printf("\n");
         printf("Deitel C/C++ Exercises\n");
         printf("======================\n\n");
-        printf("1. Chapter 6\n");
+
+        print_chapters();
+
         printf("0. Exit\n\n");
-        int result = read_option("Select an option: ", &option);
+
+        int result = read_option("Select a chapter: ", &option);
 
         if (result == -1) {
+            putchar('\n');
             return EXIT_SUCCESS;
         }
 
@@ -44,18 +49,17 @@ int main(void)
             continue;
         }
 
-        switch (option) {
-        case 0:
+        if (option == 0) {
             return EXIT_SUCCESS;
-
-        case 1:
-            chapter_06_menu();
-            break;
-
-        default:
-            printf("\nInvalid option.\n");
-            break;
         }
+
+        if (option < 0 ||
+            !chapter_exists((unsigned int)option)) {
+            printf("\nInvalid option.\n");
+            continue;
+        }
+
+        chapter_menu((unsigned int)option);
     }
 }
 
@@ -69,6 +73,16 @@ static int read_option(const char *prompt, int *value)
 
     if (fgets(buffer, sizeof buffer, stdin) == NULL) {
         return -1;
+    }
+
+    if (strchr(buffer, '\n') == NULL) {
+        int ch;
+
+        while ((ch = getchar()) != '\n' && ch != EOF) {
+            ;
+        }
+
+        return 0;
     }
 
     errno = 0;
@@ -136,19 +150,28 @@ static int run_exercise(const struct exercise *exercise)
     return -1;
 }
 
-static void chapter_06_menu(void)
+static void chapter_menu(unsigned int chapter)
 {
     int option;
 
     for (;;) {
-        printf("\n");
-        printf("Chapter 6\n");
+        printf("\nChapter %u\n", chapter);
         printf("=========\n\n");
-        printf("38. %s\n", exercises[0].title);
+
+        for (size_t i = 0; i < EXERCISE_COUNT; ++i) {
+            if (exercises[i].chapter == chapter) {
+                printf("%u. %s\n",
+                       exercises[i].number,
+                       exercises[i].title);
+            }
+        }
+
         printf("0. Back\n\n");
+
         int result = read_option("Select an exercise: ", &option);
 
         if (result == -1) {
+            putchar('\n');
             return;
         }
 
@@ -157,32 +180,71 @@ static void chapter_06_menu(void)
             continue;
         }
 
-        switch (option) {
-        case 0:
+        if (option == 0) {
             return;
+        }
 
-        case 38:
-            printf("\nRunning %u.%u - %s\n\n",
-                   exercises[0].chapter,
-                   exercises[0].number,
-                   exercises[0].title);
-
-                   int status = run_exercise(&exercises[0]);
-
-                   if (status > 0) {
-                       fprintf(stderr,
-                               "\nExercise exited with status %d.\n",
-                               status);
-                   } else if (status < 0) {
-                       fprintf(stderr,
-                               "\nExercise did not terminate normally.\n");
-                   }
-            break;
-
-        default:
+        if (option < 0) {
             printf("\nInvalid option.\n");
-            break;
+            continue;
+        }
+
+        const struct exercise *selected = NULL;
+
+        for (size_t i = 0; i < EXERCISE_COUNT; ++i) {
+            if (exercises[i].chapter == chapter &&
+                exercises[i].number == (unsigned int)option) {
+                selected = &exercises[i];
+                break;
+            }
+        }
+
+        if (selected == NULL) {
+            printf("\nInvalid option.\n");
+            continue;
+        }
+
+        printf("\nRunning %u.%u - %s\n\n",
+               selected->chapter,
+               selected->number,
+               selected->title);
+
+        int status = run_exercise(selected);
+
+        if (status > 0) {
+            fprintf(stderr,
+                    "\nExercise exited with status %d.\n",
+                    status);
+        } else if (status < 0) {
+            fprintf(stderr,
+                    "\nExercise did not terminate normally.\n");
         }
     }
+}
+
+static void print_chapters(void)
+{
+    unsigned int previous_chapter = 0;
+
+    for (size_t i = 0; i < EXERCISE_COUNT; ++i) {
+        if (exercises[i].chapter != previous_chapter) {
+            printf("%u. Chapter %u\n",
+                   exercises[i].chapter,
+                   exercises[i].chapter);
+
+            previous_chapter = exercises[i].chapter;
+        }
+    }
+}
+
+static int chapter_exists(unsigned int chapter)
+{
+    for (size_t i = 0; i < EXERCISE_COUNT; ++i) {
+        if (exercises[i].chapter == chapter) {
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
