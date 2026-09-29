@@ -3,7 +3,7 @@
 
 void strrev(char *s);
 
-int main(int nArgs, char *vArgs[])
+int main(void)
 {
     char line[] = "Hello world again!";
 

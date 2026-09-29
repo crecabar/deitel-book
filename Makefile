@@ -8,7 +8,7 @@ LAUNCHER := $(BUILD)/deitel
 
 all: $(LAUNCHER) $(BUILD)/chapter_06/06_38_string_reverse
 
-$(LAUNCHER): launcher/main.c
+$(LAUNCHER): launcher/main.c launcher/exercise.h
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $< -o $@
 
