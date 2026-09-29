@@ -4,6 +4,12 @@ A collection of my solutions to the programming exercises from Deitel & Deitel's
 
 Each exercise is implemented as an independent C program and can be compiled and executed on its own. The repository also includes an interactive launcher that automatically discovers the available chapters and exercises.
 
+## Book Edition
+
+The exercises in this repository follow the **second edition** of Deitel & Deitel's *C/C++ How to Program*.
+
+Exercise and chapter numbers may differ from those in other editions of the book.
+
 ## Building
 
 Build the launcher and all available exercises with:
